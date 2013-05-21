@@ -2,7 +2,6 @@
 
 error_reporting(-1);
 
-//require 'vendor/autoload.php';
 require dirname(__DIR__) . '/config/config.php';
 require INCLUDE_DIR . '/controller/Common.php';
 require INCLUDE_DIR . '/controller/GetData.php';
@@ -42,10 +41,4 @@ else
 {
     $log->addInfo("Unknown controller");
 }
-
-
-
-
-
-
 
