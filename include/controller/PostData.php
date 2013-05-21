@@ -11,17 +11,19 @@ class PostData extends Common
         parent::__construct($log);
     }
 
-    public function process()
+    public function process($params)
     {
         $data = array(
-            'TableName'     => 'history',
+            'TableName'     => 'history_new',
             'Item'          => array(
-                'email' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $_POST['email']),
-                'timestamp' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $_POST['timestamp']),
-                'long'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $_POST['long']),
-                'lat'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $_POST['lat']),
+                'email' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['email']),
+                'timestamp' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['timestamp']),
+                'long'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['long']),
+                'lat'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['lat']),
             )
         );
+
+        $this->log->addDebug("EMail: " . $params['email'] );
 
         try
         {

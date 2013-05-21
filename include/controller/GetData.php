@@ -9,16 +9,18 @@ class GetData extends Common
         parent::__construct($log);
     }
 
-    public function process()
+    public function process($params)
     {
         $data = array(
-            'TableName'     => 'history',
-            'HashKeyValue'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $_GET['user_id']),
+            'TableName'     => 'history_new',
+            'HashKeyValue'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['user_id']),
+	    'Limit'         => empty($params['limit']) ? 25 : (int)$params['limit'],
+	    'ScanIndexForward' => false,
             "RangeKeyCondition" => array(
                 "ComparisonOperator" => "BETWEEN",
                 "AttributeValueList" => array(
-                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($_GET['date'] . " 00:00:00")),
-                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($_GET['date'] . " 23:59:59")),
+                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($params['date'] . " 00:00:00")),
+                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($params['date'] . " 23:59:59")),
                 )
             )
         );
@@ -27,9 +29,21 @@ class GetData extends Common
 
         try
         {
+	    $start = microtime(true);
             $response = $this->instance->query($data);
+            $this->log->addDebug("OK. Consumed units: " . $response['ConsumedCapacityUnits']);
+            $this->log->addDebug("Took: " . (microtime(true) - $start));
 
-            print_r($response['Items']);
+            $formattedResponse = array();
+            for($i=0; $i<count($response['Items']); $i++) {
+	      $formattedResponse[] = array($response['Items'][$i]['lat']['S'], $response['Items'][$i]['long']['S'], date('D M d H:i:s', $response['Items'][$i]['timestamp']['S']));
+	      $this->log->addInfo("Timestammp: " . date('Y-m-d H:i:s', $response['Items'][$i]['timestamp']['S']));
+	    }
+
+	    $this->log->addInfo("Number of datapoints:");
+	    $this->log->addInfo(count($formattedResponse));
+            //print json_encode($response['Items']);
+	    print json_encode($formattedResponse);
         }
         catch (\Exception $e)
         {

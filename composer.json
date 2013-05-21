@@ -1,6 +1,9 @@
 {
     "require": {
         "monolog/monolog": "1.4.0",
-	"aws/aws-sdk-php": "2.1.2"
+	"aws/aws-sdk-php": "2.1.2",
+        "slim/slim": "2.*",
+	"pimple/pimple": "*"
+
     }
 }
