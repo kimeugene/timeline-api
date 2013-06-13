@@ -32,8 +32,8 @@ class GetData extends Common
             'RangeKeyCondition' => array(
                 'ComparisonOperator' => 'BETWEEN',
                 'AttributeValueList' => array(
-                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($params['date'] . " 00:00:00")),
-                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($params['date'] . " 23:59:59")),
+                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($params['date'] . ' 00:00:00')),
+                    array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => strtotime($params['date'] . ' 23:59:59')),
                 )
             )
         );
@@ -44,8 +44,8 @@ class GetData extends Common
         {
             $start = microtime(true);
             $response = $this->instance->query($data);
-            $this->log->addDebug("OK. Consumed units: " . $response['ConsumedCapacityUnits']);
-            $this->log->addDebug("Took: " . (microtime(true) - $start));
+            $this->log->addDebug('OK. Consumed units: ' . $response['ConsumedCapacityUnits']);
+            $this->log->addDebug('Took: ' . (microtime(true) - $start));
 
             $formattedResponse = array();
             for($i=0; $i<count($response['Items']); $i++) {
@@ -56,23 +56,22 @@ class GetData extends Common
                 }
             }
 
-            $this->log->addInfo("Number of datapoints:");
-            $this->log->addInfo(count($formattedResponse));
+            $this->log->addInfo(sprintf("Number of datapoints: %d", count($formattedResponse)));
             //print json_encode($response['Items']);
             print json_encode($formattedResponse);
         }
         catch (\Exception $e)
         {
-            $this->log->addError("ERROR:" . $e->getMessage());
+            $this->log->addError($e->getMessage());
         }
 
         if (isset($response['ConsumedCapacityUnits']) && $response['ConsumedCapacityUnits'] > 0)
         {
-            $this->log->addDebug("OK. Consumed units: " . $response['ConsumedCapacityUnits']);
+            $this->log->addDebug('OK. Consumed units: ' . $response['ConsumedCapacityUnits']);
         }
         else
         {
-            $this->log->addError("ERROR");
+            $this->log->addError('Could not find Consumed Capacity Units or the value was 0.');
         }
 
     }
@@ -86,20 +85,24 @@ class GetData extends Common
     private function filterPoints($latitude, $longitude)
     {
         if (empty($this->pointOfOrigin)) {
+			$this->log->addDebug(sprintf('Setting point of origin at latitude: %s and longitude: %s.', $latitude, $longitude));
             $this->pointOfOrigin = array(
                 'latitude'  => $latitude,
                 'longitude' => $longitude
             );
             return true;
         }
+		$this->log->addDebug(sprintf('Point of origin: %s', print_r($this->pointOfOrigin)));
         
         $currentPoint = array(
             'latitude'  => $latitude,
             'longitude' => $longitude
         );
-        $distance = self::distance($this->pointOfOrigin, $currentPoint);
+		$this->log->addDebug(sprintf('Current point: %s', print_r($currentPoint)));
         
-		$this->log->addDebug(sprintf('Distance: %d', $distance));
+        $distance = self::distance($this->pointOfOrigin, $currentPoint);
+		$this->log->addDebug(sprintf('Distance calculated: %d', $distance));
+		
         if ($distance <= self::MINIMUM_DISTANCE) {
             $this->log->addDebug(sprintf('Point discarded; distance was too low: %d.', $distance));
             return false;
