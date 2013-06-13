@@ -4,7 +4,7 @@ namespace Timeline;
 class GetData extends Common
 {
     // Minimum distance required to be considered a new point.
-    const MINIMUM_DISTANCE = 500;
+    const MINIMUM_DISTANCE = .1;
     
     // Units of distance
     const MILES = 'M';
@@ -101,7 +101,7 @@ class GetData extends Common
 		$this->log->addDebug(sprintf('Current point: %s', print_r($currentPoint, true)));
         
         $distance = self::distance($this->pointOfOrigin, $currentPoint);
-		$this->log->addDebug(sprintf('Distance calculated: %d', $distance));
+		$this->log->addDebug('Distance calculated: ' . $distance);
 		
         if ($distance <= self::MINIMUM_DISTANCE) {
             $this->log->addDebug(sprintf('Point discarded; distance was too low: %d.', $distance));
@@ -122,9 +122,11 @@ class GetData extends Common
     public static function distance(array $firstPoint, array $secondPoint, $returnAsUnitOfDistance=null) 
     {
         $theta = $firstPoint['longitude'] - $secondPoint['longitude'];
+		$this->log->addDebug('Theta: ' . $theta);
         $radiants = sin(deg2rad($firstPoint['latitude'])) * sin(deg2rad($secondPoint['latitude']))
             + cos(deg2rad($firstPoint['latitude'])) * cos(deg2rad($secondPoint['latitude'])) * cos(deg2rad($theta));
         $distance = rad2deg(acos($radiants));
+		$this->log->addDebug('Distance: ' . $distance);
 
         if ($returnAsUnitOfDistance !== null) {
             $miles = $distance * 60 * 1.1515;
