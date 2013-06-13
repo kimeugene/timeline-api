@@ -85,24 +85,24 @@ class GetData extends Common
     private function filterPoints($latitude, $longitude)
     {
         if (empty($this->pointOfOrigin)) {
-			$this->log->addDebug(sprintf('Setting point of origin at latitude: %s and longitude: %s.', $latitude, $longitude));
+            $this->log->addDebug(sprintf('Setting point of origin at latitude: %s and longitude: %s.', $latitude, $longitude));
             $this->pointOfOrigin = array(
                 'latitude'  => $latitude,
                 'longitude' => $longitude
             );
             return true;
         }
-		$this->log->addDebug(sprintf('Point of origin: %s', print_r($this->pointOfOrigin, true)));
+        $this->log->addDebug(sprintf('Point of origin: %s', print_r($this->pointOfOrigin, true)));
         
         $currentPoint = array(
             'latitude'  => $latitude,
             'longitude' => $longitude
         );
-		$this->log->addDebug(sprintf('Current point: %s', print_r($currentPoint, true)));
+        $this->log->addDebug(sprintf('Current point: %s', print_r($currentPoint, true)));
         
         $distance = self::vincentyGreatCircleDistance($this->pointOfOrigin, $currentPoint);
-		$this->log->addDebug('Distance calculated: ' . $distance);
-		
+        $this->log->addDebug('Distance calculated: ' . $distance);
+        
         if ($distance <= self::MINIMUM_DISTANCE) {
             $this->log->addDebug(sprintf('Point discarded; distance was too low: %d.', $distance));
             return false;
@@ -119,49 +119,48 @@ class GetData extends Common
      * @param string $returnAsUnitOfDistance [optional] Instead of raw distance, a unit of distance will be returned: kilometers, miles, nautical miles.
      * @return int distance, in requested or raw format.
      */
-    public static function distance(array $firstPoint, array $secondPoint, $returnAsUnitOfDistance=null) 
+//    public static function distance(array $firstPoint, array $secondPoint, $returnAsUnitOfDistance=null) 
+//    {
+//        $theta = $firstPoint['longitude'] - $secondPoint['longitude'];
+//        $this->log->addDebug('Theta: ' . $theta);
+//        $radiants = sin(deg2rad($firstPoint['latitude'])) * sin(deg2rad($secondPoint['latitude']))
+//            + cos(deg2rad($firstPoint['latitude'])) * cos(deg2rad($secondPoint['latitude'])) * cos(deg2rad($theta));
+//        $distance = rad2deg(acos($radiants));
+//        $this->log->addDebug('Distance: ' . $distance);
+//
+//        if ($returnAsUnitOfDistance !== null) {
+//            $miles = $distance * 60 * 1.1515;
+//            switch ($returnAsUnitOfDistance) {
+//            case self::KILOMETERS:
+//                return ($miles * 1.609344);
+//                break;
+//            case self::NAUTICAL_MILES:
+//                return ($miles * 0.8684);
+//                break;
+//            case self::MILES:
+//            default:
+//                return $miles;
+//            }
+//        }
+//        return $distance;
+//    }
+    
+    public static function vincentyGreatCircleDistance(array $firstPoint, array $secondPoint, $earthRadius = 6371000)
     {
-        $theta = $firstPoint['longitude'] - $secondPoint['longitude'];
-		$this->log->addDebug('Theta: ' . $theta);
-        $radiants = sin(deg2rad($firstPoint['latitude'])) * sin(deg2rad($secondPoint['latitude']))
-            + cos(deg2rad($firstPoint['latitude'])) * cos(deg2rad($secondPoint['latitude'])) * cos(deg2rad($theta));
-        $distance = rad2deg(acos($radiants));
-		$this->log->addDebug('Distance: ' . $distance);
+        // convert from degrees to radians
+        $latFrom = deg2rad($firstPoint['latitude']);
+        $lonFrom = deg2rad($firstPoint['longitude']);
+        $latTo = deg2rad($secondPoint['latitude']);
+        $lonTo = deg2rad($secondPoint['longitude']);
 
-        if ($returnAsUnitOfDistance !== null) {
-            $miles = $distance * 60 * 1.1515;
-            switch ($returnAsUnitOfDistance) {
-            case self::KILOMETERS:
-                return ($miles * 1.609344);
-                break;
-            case self::NAUTICAL_MILES:
-                return ($miles * 0.8684);
-                break;
-            case self::MILES:
-            default:
-                return $miles;
-            }
-        }
-        return $distance;
+        $lonDelta = $lonTo - $lonFrom;
+        $a = pow(cos($latTo) * sin($lonDelta), 2) +
+            pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+        $b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+
+        $angle = atan2(sqrt($a), $b);
+        return $angle * $earthRadius;
     }
-	
-	public static function vincentyGreatCircleDistance(array $firstPoint, array $secondPoint, $earthRadius = 6371000)
-	{
-		// convert from degrees to radians
-		$latFrom = deg2rad($firstPoint['latitude']);
-		$lonFrom = deg2rad($firstPoint['longitude']);
-		$latTo = deg2rad($secondPoint['latitude']);
-		$lonTo = deg2rad($secondPoint['longitude']);
-
-		$lonDelta = $lonTo - $lonFrom;
-		$a = pow(cos($latTo) * sin($lonDelta), 2) +
-			pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
-		$b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
-
-		$angle = atan2(sqrt($a), $b);
-		return $angle * $earthRadius;
-
-	}
     
 }
 
