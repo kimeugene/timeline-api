@@ -100,7 +100,7 @@ class GetData extends Common
         );
 		$this->log->addDebug(sprintf('Current point: %s', print_r($currentPoint, true)));
         
-        $distance = self::distance($this->pointOfOrigin, $currentPoint);
+        $distance = self::vincentyGreatCircleDistance($this->pointOfOrigin, $currentPoint);
 		$this->log->addDebug('Distance calculated: ' . $distance);
 		
         if ($distance <= self::MINIMUM_DISTANCE) {
@@ -144,6 +144,24 @@ class GetData extends Common
         }
         return $distance;
     }
+	
+	public static function vincentyGreatCircleDistance(array $firstPoint, array $secondPoint, $earthRadius = 6371000)
+	{
+		// convert from degrees to radians
+		$latFrom = deg2rad($firstPoint['latitude']);
+		$lonFrom = deg2rad($firstPoint['longitude']);
+		$latTo = deg2rad($secondPoint['latitude']);
+		$lonTo = deg2rad($secondPoint['longitude']);
+
+		$lonDelta = $lonTo - $lonFrom;
+		$a = pow(cos($latTo) * sin($lonDelta), 2) +
+			pow(cos($latFrom) * sin($latTo) - sin($latFrom) * cos($latTo) * cos($lonDelta), 2);
+		$b = sin($latFrom) * sin($latTo) + cos($latFrom) * cos($latTo) * cos($lonDelta);
+
+		$angle = atan2(sqrt($a), $b);
+		return $angle * $earthRadius;
+
+	}
     
 }
 
