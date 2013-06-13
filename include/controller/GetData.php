@@ -119,9 +119,9 @@ class GetData extends Common
     public static function distance(array $firstPoint, array $secondPoint, $returnAsUnitOfDistance=null) 
     {
         $theta = $firstPoint['longitude'] - $secondPoint['longitude'];
-        $radiants = cos(deg2rad($firstPoint['latitude'])) * cos(deg2rad($secondPoint['latitude'])) * cos(deg2rad($theta))
-            + sin(deg2rad($firstPoint['latitude'])) * sin(deg2rad($secondPoint['latitude']));
-        $distance = acos(rad2deg($radiants));
+        $radiants = sin(deg2rad($firstPoint['latitude'])) * sin(deg2rad($secondPoint['latitude']))
+            + cos(deg2rad($firstPoint['latitude'])) * cos(deg2rad($secondPoint['latitude'])) * cos(deg2rad($theta));
+        $distance = rad2deg(acos($radiants));
 
         if ($returnAsUnitOfDistance !== null) {
             $miles = $distance * 60 * 1.1515;
