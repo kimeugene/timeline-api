@@ -99,6 +99,7 @@ class GetData extends Common
         );
         $distance = self::distance($this->pointOfOrigin, $currentPoint);
         
+		$this->log->addDebug(sprintf('Distance: %d', $distance));
         if ($distance <= self::MINIMUM_DISTANCE) {
             $this->log->addDebug(sprintf('Point discarded; distance was too low: %d.', $distance));
             return false;
