@@ -92,13 +92,13 @@ class GetData extends Common
             );
             return true;
         }
-		$this->log->addDebug(sprintf('Point of origin: %s', print_r($this->pointOfOrigin)));
+		$this->log->addDebug(sprintf('Point of origin: %s', print_r($this->pointOfOrigin, true)));
         
         $currentPoint = array(
             'latitude'  => $latitude,
             'longitude' => $longitude
         );
-		$this->log->addDebug(sprintf('Current point: %s', print_r($currentPoint)));
+		$this->log->addDebug(sprintf('Current point: %s', print_r($currentPoint, true)));
         
         $distance = self::distance($this->pointOfOrigin, $currentPoint);
 		$this->log->addDebug(sprintf('Distance calculated: %d', $distance));
