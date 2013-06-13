@@ -1,5 +1,4 @@
-h<?php
-
+<?php
 namespace Timeline;
 
 class GetData extends Common
