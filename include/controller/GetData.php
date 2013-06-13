@@ -4,7 +4,7 @@ namespace Timeline;
 class GetData extends Common
 {
     // Minimum distance required to be considered a new point.
-    const MINIMUM_DISTANCE = .1;
+    const MINIMUM_DISTANCE = 150; // In meters
     
     // Units of distance
     const MILES = 'M';
@@ -38,6 +38,7 @@ class GetData extends Common
             )
         );
 
+        $this->log->addInfo('Params:' . print_r($params, true));
         $this->log->addInfo('Data array:' . print_r($data, true));
 
         try
@@ -110,40 +111,6 @@ class GetData extends Common
         $this->pointOfOrigin = $currentPoint;
         return true;
     }
-    
-    /**
-     * Logic "borrowed" from http://www.geodatasource.com/developers/php
-     * 
-     * @param array $firstPoint Latitude and Longitude of point 1 (in decimal degrees)
-     * @param array $secondPoint Latitude and Longitude of point 2 (in decimal degrees)
-     * @param string $returnAsUnitOfDistance [optional] Instead of raw distance, a unit of distance will be returned: kilometers, miles, nautical miles.
-     * @return int distance, in requested or raw format.
-     */
-//    public static function distance(array $firstPoint, array $secondPoint, $returnAsUnitOfDistance=null) 
-//    {
-//        $theta = $firstPoint['longitude'] - $secondPoint['longitude'];
-//        $this->log->addDebug('Theta: ' . $theta);
-//        $radiants = sin(deg2rad($firstPoint['latitude'])) * sin(deg2rad($secondPoint['latitude']))
-//            + cos(deg2rad($firstPoint['latitude'])) * cos(deg2rad($secondPoint['latitude'])) * cos(deg2rad($theta));
-//        $distance = rad2deg(acos($radiants));
-//        $this->log->addDebug('Distance: ' . $distance);
-//
-//        if ($returnAsUnitOfDistance !== null) {
-//            $miles = $distance * 60 * 1.1515;
-//            switch ($returnAsUnitOfDistance) {
-//            case self::KILOMETERS:
-//                return ($miles * 1.609344);
-//                break;
-//            case self::NAUTICAL_MILES:
-//                return ($miles * 0.8684);
-//                break;
-//            case self::MILES:
-//            default:
-//                return $miles;
-//            }
-//        }
-//        return $distance;
-//    }
     
     public static function vincentyGreatCircleDistance(array $firstPoint, array $secondPoint, $earthRadius = 6371000)
     {
