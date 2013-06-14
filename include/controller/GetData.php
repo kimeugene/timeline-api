@@ -4,7 +4,7 @@ namespace Timeline;
 class GetData extends Common
 {
     // Minimum distance required to be considered a new point.
-    const MINIMUM_DISTANCE = 150; // In meters
+    const MINIMUM_DISTANCE = 300; // In meters
     
     // Units of distance
     const MILES = 'M';
