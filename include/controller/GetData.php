@@ -100,7 +100,7 @@ class GetData extends Common
         $distance = self::vincentyGreatCircleDistance($this->pointOfOrigin, $currentPoint);
         $this->log->addDebug('Distance calculated: ' . $distance);
         
-        if ($distance <= $this->calculateDistance($this->zoomLevel)) {
+        if ($distance <= $this->getZoomRatio()) {
             $this->log->addDebug(sprintf('Point discarded; distance was too low: %d.', $distance));
             return false;
         }
@@ -108,6 +108,15 @@ class GetData extends Common
         return true;
     }
     
+    /**
+     * Measures the shortest distance between any two points on the surface of Earth "As the crow flies"
+     * @see http://en.wikipedia.org/wiki/Great-circle_distance
+     * 
+     * @param array $firstPoint
+     * @param array $secondPoint
+     * @param type $earthRadius
+     * @return type
+     */
     public static function vincentyGreatCircleDistance(array $firstPoint, array $secondPoint, $earthRadius = 6371000)
     {
         // convert from degrees to radians
@@ -126,40 +135,38 @@ class GetData extends Common
     }
     
     /**
-     * Distance needed to be considered a new point
-     * @todo We need to find a better algorithm for this. The number right now is arbitrary and, frankly, not immensely convincing.
-     * @param type $zoom
-     * @return type
+     * Distance needed to be considered a new point.
+     * @return int
      */
-    private function calculateDistance($zoom)
+    private function getZoomRatio($zoom=null)
     {
-        $scale = array(
-            0 => 591657550.500000,
-            1 => 591657550.500000,
-            2 => 295828775.300000,
-            3 => 147914387.600000,
-            4 => 73957193.820000,
-            5 => 36978596.910000,
-            6 => 18489298.450000,
-            7 => 9244649.227000,
-            8 => 4622324.614000,
-            9 => 2311162.307000,
-            10 => 1155581.153000,
-            11 => 577790.576700,
-            12 => 288895.288400,
-            13 => 144447.644200,
-            14 => 72223.822090,
-            15 => 36111.911040,
-            16 => 18055.955520,
-            17 => 9027.977761,
-            18 => 4513.988880,
-            19 => 2256.994440,
-            20 => 1128.497220,
-            21 => 564.24861
+        $ratio = array( // Google distance commented below
+            0  => 200000, // 1183315101
+            1  => 160000, // 591657550.5
+            2  => 120000, // 295828775.3
+            3  => 90000,  // 147914387.6
+            4  => 60000,  // 73957193.82
+            5  => 40000,  // 36978596.91
+            6  => 25000,  // 18489298.45
+            7  => 15000,  // 9244649.227
+            8  => 10000,  // 4622324.614
+            9  => 5000,   // 2311162.307
+            10 => 1800,   // 1155581.153
+            11 => 1000,   // 577790.5767
+            12 => 600,    // 288895.2884
+            13 => 450,    // 144447.6442
+            14 => 400,    // 72223.82209
+            15 => 350,    // 36111.91104
+            16 => 300,    // 18055.95552
+            17 => 250,    // 9027.977761
+            18 => 200,    // 4513.98888
+            19 => 150,    // 2256.99444
+            20 => 100,    // 1128.49722
+            21 => 50      // 564.24861
         );
         
-        $distance = $scale[$zoom] / pow(1.58, $zoom);
-        $distance = ($distance < 300) ? 300 : $distance;
+        $zoom = (!is_null($zoom)) ? $zoom : $this->zoomLevel;
+        $distance = $ratio[$zoom];
         $this->log->addDebug(sprintf('Zoom: %d, Distance calculated: %d.', $zoom, $distance));
         
         return $distance;
