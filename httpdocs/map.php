@@ -29,9 +29,9 @@ $(document).ready(function() {
         map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
         $('#zoom').val(mapOptions.zoom);
         
-        google.maps.event.addListener(map, 'zoom_changed', function() {
-            update();
-      });
+        //google.maps.event.addListener(map, 'zoom_changed', function() {
+        //    update();
+        //});
     }
 
     function listenMarker (marker, infowindow){
@@ -56,15 +56,18 @@ $(document).ready(function() {
         email = $('#email').val();
         date = $('#date').val();
         datapoints = $('#datapoints').val();
-        zoom = map.getZoom();
+        //zoom = map.getZoom();
+        zoom = $('#zoomlevel').val();
 
         if(email.length == 0) {
             alert('Please enter the email address key for DynamoDB and try again.');
             return;
         }
 
+        url = '/get/'+email+'/'+date+'/'+ zoom+'/'+datapoints;
+        console.log("calling URL: " + url)
 //        console.log('Zoom level: ' + zoom);
-        $.getJSON('/get/'+email+'/'+date+'/'+ zoom+'/'+datapoints, function(response) {
+        $.getJSON(url, function(response) {
             for(i=0; i<overlays.length; i++) {
               overlays[i].setMap(null);
             }
@@ -118,7 +121,7 @@ $(document).ready(function() {
     detectBrowser();
 
     // Click Handlers
-    $('#fetch').click(update());
+    $('#fetch').bind("click", update);
     $('#togglePanel').click(function() {
         $('#overlay').toggle();
     });
@@ -144,7 +147,11 @@ $(document).ready(function() {
        </div>
        <div style="width: 50%; float: left;">
          <b>Data Points:</b><br>
-         <input type="text" id="datapoints" style="width: 40px; height: 16px; margin-top: 5px; margin-bottom: 8px; padding: 5px;" value="500" /><br>     
+         <input type="text" id="datapoints" style="width: 40px; height: 16px; margin-top: 5px; margin-bottom: 8px; padding: 5px;" value="500" /><br>
+       </div>
+       <div style="width: 50%; float: left;">
+         <b>Zoom level:</b><br>
+         <input type="text" id="zoomlevel" style="width: 40px; height: 16px; margin-top: 5px; margin-bottom: 8px; padding: 5px;" value="10" /><br>
        </div>
      </div>
 

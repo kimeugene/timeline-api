@@ -13,13 +13,16 @@ class PostData extends Common
 
     public function process($params)
     {
+	$dataPoints = $this->breakDown($params['data_points']);
+	$this->log->addDebug(print_r($dataPoints, true));
         $data = array(
             'TableName'     => 'history_new',
             'Item'          => array(
                 'email' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['email']),
-                'timestamp' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['timestamp']),
-                'long'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['long']),
-                'lat'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['lat']),
+                'timestamp' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['ts']), // $params['timestamp']),
+                'long'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['long']), // $params['long']),
+                'lat'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['lat']), // $params['lat']),
+		'code' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['code']) // $params['code']),
             )
         );
 
@@ -44,4 +47,18 @@ class PostData extends Common
         }
 
     }
+
+    protected function breakDown($data)
+    {
+	// Assumes that the data is in the 'timestamp1|long1|lat1,timestamp2|long2|lat2,...' format.
+	$points = explode(',', $data);
+	$dataPoints = array();
+	foreach ($points as $pin) {
+	    list($ts,$long,$lat,$code) = explode('|', $pin);
+	    $dataPoints[] = array('ts'=>$ts, 'long'=>$long, 'lat'=>$lat, 'code'=>$code);
+	}
+	return $dataPoints;
+    }
+
 }
+

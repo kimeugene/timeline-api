@@ -7,7 +7,8 @@ class GetData extends Common
     const MILES = 'M';
     const KILOMETERS = 'K';
     const NAUTICAL_MILES = 'N';
-    
+
+    private $zoomLevel = 16;
     /**
      * Point of origin
      * @var array
@@ -21,7 +22,11 @@ class GetData extends Common
 
     public function process($params)
     {
-        $this->zoomLevel = $params['zoom'];
+        if (isset($params['zoom']) && !empty($params['zoom']))
+        {
+            $this->zoomLevel = $params['zoom'];
+        }
+
         $data = array(
             'TableName'         => 'history_new',
             'HashKeyValue'      => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['user_id']),
@@ -50,7 +55,13 @@ class GetData extends Common
             for($i=0; $i<count($response['Items']); $i++) {
                 $continue = $this->filterPoints($response['Items'][$i]['lat']['S'], $response['Items'][$i]['long']['S']);
                 if ($continue) {
-                    $formattedResponse[] = array($response['Items'][$i]['lat']['S'], $response['Items'][$i]['long']['S'], date('D M d H:i:s', $response['Items'][$i]['timestamp']['S']));
+
+                    $formattedResponse[] = array(
+                                               $response['Items'][$i]['lat']['S'],
+                                               $response['Items'][$i]['long']['S'],
+                                               date('D M d H:i:s', $response['Items'][$i]['timestamp']['S'])
+                                           );
+
                     $this->log->addInfo('Timestamp: ' . date('Y-m-d H:i:s', $response['Items'][$i]['timestamp']['S']));
                 }
             }
@@ -164,6 +175,30 @@ class GetData extends Common
             20 => 100,    // 1128.49722
             21 => 50      // 564.24861
         );
+
+        $ratio = array( // Google distance commented below
+            1  => 50, // 591657550.5
+            2  => 150, // 295828775.3
+            3  => 200,  // 147914387.6
+            4  => 250,  // 73957193.82
+            5  => 300,  // 36978596.91
+            6  => 350,  // 18489298.45
+            7  => 400,  // 9244649.227
+            8  => 450,  // 4622324.614
+            9  => 600,   // 2311162.307
+            10 => 1000,   // 1155581.153
+            11 => 1800,   // 577790.5767
+            12 => 5000,    // 288895.2884
+            13 => 10000,    // 144447.6442
+            14 => 15000,    // 72223.82209
+            15 => 25000,    // 36111.91104
+            16 => 40000,    // 18055.95552
+            17 => 60000,    // 9027.977761
+            18 => 90000,    // 4513.98888
+            19 => 120000,    // 2256.99444
+            20 => 160000    // 1128.49722
+        );
+
         
         $zoom = (!is_null($zoom)) ? $zoom : $this->zoomLevel;
         $distance = $ratio[$zoom];
