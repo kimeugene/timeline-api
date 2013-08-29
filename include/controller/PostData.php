@@ -13,51 +13,61 @@ class PostData extends Common
 
     public function process($params)
     {
-	$dataPoints = $this->breakDown($params['data_points']);
-	$this->log->addDebug(print_r($dataPoints, true));
-        $data = array(
-            'TableName'     => 'history_new',
-            'Item'          => array(
-                'email' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['email']),
-                'timestamp' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['ts']), // $params['timestamp']),
-                'long'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['long']), // $params['long']),
-                'lat'  => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['lat']), // $params['lat']),
-		'code' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $dataPoints['code']) // $params['code']),
-            )
-        );
+        $dataPoints = $this->breakDown($params['data_points']);
+        $this->log->addDebug(print_r($dataPoints, true));
 
-        $this->log->addDebug("EMail: " . $params['email'] );
 
-        try
+        if (is_array($dataPoints) && $dataPoints)
         {
-            $response = $this->instance->putItem($data);
-        }
-        catch (\Exception $e)
-        {
-            $this->log->addError("ERROR:" . $e->getMessage());
+            foreach ($dataPoints as $point)
+            {
+                $data = array(
+                    'TableName'     => 'history_new',
+                    'Item'          => array(
+                        'email'     => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $params['email']),
+                        'timestamp' => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $point['ts']),
+                        'long'      => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $point['long']),
+                        'lat'       => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $point['lat']),
+                        'code'      => array(\Aws\DynamoDb\Enum\ScalarAttributeType::S => $point['code'])
+                    )
+                );
+
+                $this->log->addDebug("EMail: " . $params['email'] );
+
+                try
+                {
+                    $response = $this->instance->putItem($data);
+                }
+                catch (\Exception $e)
+                {
+                    $this->log->addError("ERROR:" . $e->getMessage());
+                }
+
+                if (isset($response['ConsumedCapacityUnits']) && $response['ConsumedCapacityUnits'] > 0)
+                {
+                    $this->log->addDebug("OK. Consumed units: " . $response['ConsumedCapacityUnits']);
+                }
+                else
+                {
+                    $this->log->addError("ERROR");
+                }
+
+            }
         }
 
-        if (isset($response['ConsumedCapacityUnits']) && $response['ConsumedCapacityUnits'] > 0)
-        {
-            $this->log->addDebug("OK. Consumed units: " . $response['ConsumedCapacityUnits']);
-        }
-        else
-        {
-            $this->log->addError("ERROR");
-        }
 
     }
 
     protected function breakDown($data)
     {
-	// Assumes that the data is in the 'timestamp1|long1|lat1,timestamp2|long2|lat2,...' format.
-	$points = explode(',', $data);
-	$dataPoints = array();
-	foreach ($points as $pin) {
-	    list($ts,$long,$lat,$code) = explode('|', $pin);
-	    $dataPoints[] = array('ts'=>$ts, 'long'=>$long, 'lat'=>$lat, 'code'=>$code);
-	}
-	return $dataPoints;
+        // Assumes that the data is in the 'timestamp1|long1|lat1,timestamp2|long2|lat2,...' format.
+        $points = explode(',', $data);
+        $dataPoints = array();
+        foreach ($points as $pin) {
+            list($ts,$long,$lat,$code) = explode('|', $pin);
+            $dataPoints[] = array('ts'=>$ts, 'long'=>$long, 'lat'=>$lat, 'code'=>$code);
+        }
+        return $dataPoints;
     }
 
 }
